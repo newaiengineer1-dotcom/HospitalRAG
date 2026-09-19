@@ -1,8 +1,8 @@
 streamlit
 groq
-faiss-cpu==1.8.0.post1
+faiss-cpu
 sentence-transformers
-numpy<2
+numpy
 pypdf
 python-docx
 openpyxl

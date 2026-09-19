@@ -1,0 +1,10 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.env
+.streamlit/secrets.toml
+.ipynb_checkpoints/
+.DS_Store
+# Do NOT ignore knowledge_base/

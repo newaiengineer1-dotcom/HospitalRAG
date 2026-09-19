@@ -1,567 +1,124 @@
+import json, os, re
 from pathlib import Path
-import json
-import hashlib
-import re
-import csv
-
-import numpy as np
 import faiss
-
+import streamlit as st
 from sentence_transformers import SentenceTransformer
+from groq import Groq
 
-from pypdf import PdfReader
-from docx import Document as DocxDocument
-from openpyxl import load_workbook
-from pptx import Presentation
+BASE=Path(__file__).resolve().parent
+KB=BASE/"knowledge_base"
+INDEX=KB/"faiss.index"; META=KB/"metadata.json"; CONFIG=KB/"config.json"
+DEFAULT_EMBED="sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_MODEL="openai/gpt-oss-120b"
 
+st.set_page_config(page_title="HospitalRAG", page_icon="🏥", layout="wide")
+st.markdown("""
+<style>
+.stApp{background:#071313;color:#E6FFFB}
+[data-testid="stSidebar"]{background:#0A1D1D}
+.hero{padding:28px;border:1px solid #175C58;border-radius:18px;background:#0B2423;margin-bottom:22px}
+.hero h1{margin:0;color:#E6FFFB}.hero p{color:#A7C9C5}
+.source{padding:12px;border-left:3px solid #14B8A6;background:#0A1918;border-radius:8px;margin:7px 0}
+</style>""", unsafe_allow_html=True)
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
+@st.cache_resource
+def embedder(name): return SentenceTransformer(name)
 
-BASE_DIR = Path.cwd()
+@st.cache_resource
+def load_kb():
+    if not INDEX.exists() or not META.exists(): return None,[],{}
+    idx=faiss.read_index(str(INDEX))
+    meta=json.loads(META.read_text(encoding="utf-8"))
+    cfg=json.loads(CONFIG.read_text(encoding="utf-8")) if CONFIG.exists() else {}
+    return idx,meta,cfg
 
-DOCUMENT_DIR = BASE_DIR / "hospital_documents"
-KB_DIR = BASE_DIR / "knowledge_base"
-
-INDEX_FILE = KB_DIR / "faiss.index"
-METADATA_FILE = KB_DIR / "metadata.json"
-CONFIG_FILE = KB_DIR / "config.json"
-MANIFEST_FILE = KB_DIR / "manifest.json"
-
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-
-CHUNK_SIZE = 1800
-CHUNK_OVERLAP = 300
-
-SUPPORTED_EXTENSIONS = {
-    ".pdf",
-    ".docx",
-    ".txt",
-    ".md",
-    ".csv",
-    ".xlsx",
-    ".pptx",
-}
-
-
-# ============================================================
-# TEXT CLEANING
-# ============================================================
-
-def clean_text(text: str) -> str:
-    if not text:
-        return ""
-
-    text = text.replace("\x00", " ")
-    text = text.replace("\r\n", "\n")
-    text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-
-    return text.strip()
-
-
-# ============================================================
-# CHUNKING
-# ============================================================
-
-def create_chunks(text: str):
-    text = clean_text(text)
-
-    if not text:
-        return []
-
-    chunks = []
-
-    start = 0
-    text_length = len(text)
-
-    while start < text_length:
-
-         end = min(start + CHUNK_SIZE, text_length)
-
-         # Try to finish at a natural boundary
-         if end < text_length:
-             boundary = text.rfind("\n\n", start, end)
-
-             if boundary == -1:
-                 boundary = text.rfind(". ", start, end)
-
-             if boundary == -1:
-                 boundary = text.rfind(" ", start, end)
-
-             if boundary > start + int(CHUNK_SIZE * 0.55):
-                 end = boundary + 1
-
-         chunk = text[start:end].strip()
-
-         if chunk:
-             chunks.append(chunk)
-
-         if end >= text_length:
-             break
-
-         next_start = end - CHUNK_OVERLAP
-
-         if next_start <= start:
-             next_start = end
-
-         start = next_start
-
-    return chunks
-
-
-# ============================================================
-# DOCUMENT EXTRACTION
-# ============================================================
-
-def extract_pdf(path: Path):
-    records = []
-
+def secret(name, default=None):
     try:
-        reader = PdfReader(str(path))
-
-        for page_number, page in enumerate(reader.pages, start=1):
-
-            text = page.extract_text() or ""
-
-            if text.strip():
-                records.append({
-                    "text": text,
-                    "page_number": page_number,
-                    "section": "",
-                })
-
-    except Exception as exc:
-        print(f"[PDF ERROR] {path.name}: {exc}")
-
-    return records
-
-
-def extract_docx(path: Path):
-    records = []
-
-    try:
-        doc = DocxDocument(str(path))
-
-        paragraphs = []
-
-        for paragraph in doc.paragraphs:
-            if paragraph.text.strip():
-                paragraphs.append(paragraph.text)
-
-        # Extract tables
-        for table in doc.tables:
-            for row in table.rows:
-                row_text = " | ".join(
-                    cell.text.strip()
-                    for cell in row.cells
-                )
-
-                if row_text.strip():
-                    paragraphs.append(row_text)
-
-        text = "\n".join(paragraphs)
-
-        if text.strip():
-            records.append({
-                "text": text,
-                "page_number": None,
-                "section": "",
-            })
-
-    except Exception as exc:
-        print(f"[DOCX ERROR] {path.name}: {exc}")
-
-    return records
-
-
-def extract_text_file(path: Path):
-    try:
-        text = path.read_text(
-            encoding="utf-8",
-            errors="ignore"
-        )
-
-        if text.strip():
-            return [{
-                "text": text,
-                "page_number": None,
-                "section": "",
-            }]
-
-    except Exception as exc:
-        print(f"[TEXT ERROR] {path.name}: {exc}")
-
-    return []
-
-
-def extract_csv(path: Path):
-    rows = []
-
-    try:
-        with open(
-            path,
-            "r",
-            encoding="utf-8",
-            errors="ignore",
-            newline=""
-        ) as file:
-
-            reader = csv.reader(file)
-
-            for row in reader:
-                row_text = " | ".join(str(x) for x in row)
-
-                if row_text.strip():
-                    rows.append(row_text)
-
-        text = "\n".join(rows)
-
-        if text.strip():
-            return [{
-                "text": text,
-                "page_number": None,
-                "section": "",
-            }]
-
-    except Exception as exc:
-        print(f"[CSV ERROR] {path.name}: {exc}")
-
-    return []
-
-
-def extract_xlsx(path: Path):
-    records = []
-
-    try:
-        workbook = load_workbook(
-            filename=path,
-            read_only=True,
-            data_only=True
-        )
-
-        for worksheet in workbook.worksheets:
-
-            rows = []
-
-            for row in worksheet.iter_rows(values_only=True):
-
-                values = [
-                    str(value).strip()
-                    for value in row
-                    if value is not None
-                ]
-
-                if values:
-                    rows.append(" | ".join(values))
-
-            text = "\n".join(rows)
-
-            if text.strip():
-
-                records.append({
-                    "text": text,
-                    "page_number": None,
-                    "section": worksheet.title,
-                })
-
-    except Exception as exc:
-        print(f"[XLSX ERROR] {path.name}: {exc}")
-
-    return records
-
-
-def extract_pptx(path: Path):
-    records = []
-
-    try:
-        presentation = Presentation(str(path))
-
-        for slide_number, slide in enumerate(
-            presentation.slides,
-            start=1
-        ):
-
-            texts = []
-
-            for shape in slide.shapes:
-
-                if hasattr(shape, "text"):
-                    if shape.text.strip():
-                        texts.append(shape.text)
-
-            text = "\n".join(texts)
-
-            if text.strip():
-                records.append({
-                    "text": text,
-                    "page_number": slide_number,
-                    "section": f"Slide {slide_number}",
-                })
-
-    except Exception as exc:
-        print(f"[PPTX ERROR] {path.name}: {exc}")
-
-    return records
-
-
-def extract_document(path: Path):
-
-    extension = path.suffix.lower()
-
-    if extension == ".pdf":
-        return extract_pdf(path)
-
-    if extension == ".docx":
-        return extract_docx(path)
-
-    if extension in {".txt", ".md"}:
-        return extract_text_file(path)
-
-    if extension == ".csv":
-        return extract_csv(path)
-
-    if extension == ".xlsx":
-        return extract_xlsx(path)
-
-    if extension == ".pptx":
-        return extract_pptx(path)
-
-    return []
-
-
-# ============================================================
-# DOCUMENT ID
-# ============================================================
-
-def make_document_id(filename: str) -> str:
-
-    return hashlib.sha256(
-        filename.encode("utf-8")
-    ).hexdigest()[:16]
-
-
-# ============================================================
-# BUILD KNOWLEDGE BASE
-# ============================================================
-
-def build_knowledge_base():
-
-    DOCUMENT_DIR.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
-    KB_DIR.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
-    files = [
-        path
-        for path in DOCUMENT_DIR.rglob("*")
-        if path.is_file()
-        and path.suffix.lower() in SUPPORTED_EXTENSIONS
-    ]
-
-    if not files:
-        raise RuntimeError(
-            "No supported documents found in "
-            f"{DOCUMENT_DIR}"
-        )
-
-    print("=" * 60)
-    print("HOSPITAL RAG - KNOWLEDGE BASE BUILD")
-    print("=" * 60)
-
-    metadata = []
-    texts = []
-
-    chunk_counter = 0
-
-    for path in files:
-
-        print(f"\nProcessing: {path.name}")
-
-        document_id = make_document_id(path.name)
-
-        records = extract_document(path)
-
-        for record in records:
-
-            chunks = create_chunks(
-                record["text"]
-            )
-
-            for chunk_index, chunk_text in enumerate(
-                chunks
-            ):
-
-                chunk_id = f"chunk_{chunk_counter:06d}"
-
-                metadata.append({
-                    "document_id": document_id,
-                    "filename": path.name,
-                    "page_number": record["page_number"],
-                    "section": record["section"],
-                    "chunk_id": chunk_id,
-                    "chunk_index": chunk_index,
-                    "text": chunk_text,
-                    "source": path.name,
-                })
-
-                texts.append(chunk_text)
-
-                chunk_counter += 1
-
-        print(
-            f"  Extracted records: {len(records)}"
-        )
-
-    if not texts:
-        raise RuntimeError(
-            "Documents were found, but no text "
-            "could be extracted."
-        )
-
-    print("\nTotal chunks:", len(texts))
-
-    # ========================================================
-    # EMBEDDINGS
-    # ========================================================
-
-    print("\nLoading embedding model:")
-
-    print(EMBEDDING_MODEL)
-
-    model = SentenceTransformer(
-        EMBEDDING_MODEL
-    )
-
-    print("Creating embeddings...")
-
-    embeddings = model.encode(
-        texts,
-        batch_size=32,
-        show_progress_bar=True,
-        normalize_embeddings=True,
-        convert_to_numpy=True,
-    )
-
-    embeddings = np.asarray(
-        embeddings,
-        dtype="float32"
-    )
-
-    print(
-        "Embedding shape:",
-        embeddings.shape
-    )
-
-    # ========================================================
-    # FAISS
-    # ========================================================
-
-    dimension = embeddings.shape[1]
-
-    index = faiss.IndexFlatIP(
-        dimension
-    )
-
-    index.add(embeddings)
-
-    faiss.write_index(
-        index,
-        str(INDEX_FILE)
-    )
-
-    # ========================================================
-    # METADATA
-    # ========================================================
-
-    with open(
-        METADATA_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
-
-        json.dump(
-            metadata,
-            file,
-            ensure_ascii=False,
-            indent=2
-        )
-
-    # ========================================================
-    # CONFIG
-    # ========================================================
-
-    config = {
-        "embedding_model": EMBEDDING_MODEL,
-        "vector_dimension": dimension,
-        "chunk_size": CHUNK_SIZE,
-        "chunk_overlap": CHUNK_OVERLAP,
-        "similarity_type": "cosine_via_normalized_inner_product",
-        "total_chunks": len(metadata),
-    }
-
-    with open(
-        CONFIG_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
-
-        json.dump(
-            config,
-            file,
-            indent=2
-        )
-
-    # ========================================================
-    # MANIFEST
-    # ========================================================
-
-    manifest = {
-        "application": "Hospital Knowledge Assistant",
-        "total_documents": len(files),
-        "total_chunks": len(metadata),
-        "embedding_model": EMBEDDING_MODEL,
-        "index_type": "FAISS IndexFlatIP",
-        "files": [
-            path.name
-            for path in files
-        ],
-    }
-
-    with open(
-        MANIFEST_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
-
-        json.dump(
-            manifest,
-            file,
-            ensure_ascii=False,
-            indent=2
-        )
-
-    print("\n" + "=" * 60)
-    print("KNOWLEDGE BASE CREATED SUCCESSFULLY")
-    print("=" * 60)
-
-    print("Documents:", len(files))
-    print("Chunks:", len(metadata))
-    print("Vector dimension:", dimension)
-
-    print("\nCreated files:")
-
-    print(INDEX_FILE)
-    print(METADATA_FILE)
-    print(CONFIG_FILE)
-    print(MANIFEST_FILE)
-
-
-if __name__ == "__main__":
-    build_knowledge_base()
+        v=st.secrets.get(name)
+        if v: return v
+    except Exception: pass
+    return os.getenv(name,default)
+
+def words(s):
+    stop={"what","when","where","which","with","from","about","please","could","would","this","that","have","does","your","hospital"}
+    return {x for x in re.findall(r"[A-Za-z0-9]{4,}",s.lower()) if x not in stop}
+
+def retrieve(q,idx,meta,model,topk,threshold):
+    m=embedder(model)
+    v=m.encode([q],normalize_embeddings=True).astype("float32")
+    scores,ids=idx.search(v,min(topk*3,len(meta)))
+    qw=words(q); out=[]; seen=set()
+    for score,i in zip(scores[0],ids[0]):
+        if i<0 or i>=len(meta) or float(score)<threshold: continue
+        item=meta[i]; text=str(item.get("text",""))
+        kw=len(qw & words(text))/max(len(qw),1)
+        final=.8*float(score)+.2*kw
+        key=(item.get("filename"),item.get("page_number"),text[:150])
+        if key in seen: continue
+        seen.add(key); out.append({"score":final,"item":item})
+        if len(out)>=topk: break
+    return sorted(out,key=lambda x:x["score"],reverse=True)
+
+def answer(q,results,model):
+    key=secret("GROQ_API_KEY")
+    if not key: raise RuntimeError("GROQ_API_KEY is not configured in Streamlit Secrets.")
+    context="\n\n".join(
+        f"[SOURCE {i}] Document: {r['item'].get('filename')} | Page/Slide: {r['item'].get('page_number','N/A')} | Section: {r['item'].get('section','N/A')}\n{r['item'].get('text','')}"
+        for i,r in enumerate(results,1))
+    system="""You are HospitalRAG, a document-grounded hospital knowledge assistant.
+Answer ONLY from the supplied context. Never invent facts, policies, doctors, phone numbers,
+hours, prices, medications, diagnoses, procedures, dates, values, or citations.
+If evidence is insufficient, say exactly: "I could not find sufficient information in the knowledge base to answer this question."
+Cite evidence as [Source 1], [Source 2]. Do not invent page numbers.
+For emergencies, direct the user to qualified emergency/medical professionals."""
+    c=Groq(api_key=key)
+    r=c.chat.completions.create(model=model,messages=[
+        {"role":"system","content":system},
+        {"role":"user","content":f"CONTEXT:\n{context}\n\nQUESTION:\n{q}"}],
+        temperature=.1,max_tokens=900)
+    return r.choices[0].message.content
+
+idx,meta,cfg=load_kb()
+embed_model=cfg.get("embedding_model",DEFAULT_EMBED)
+groq_model=secret("GROQ_MODEL",cfg.get("groq_model",DEFAULT_MODEL))
+topk=int(cfg.get("top_k",5)); threshold=float(cfg.get("similarity_threshold",.42))
+
+with st.sidebar:
+    st.markdown("## 🏥 HospitalRAG")
+    if idx:
+        st.success("Knowledge Base Ready")
+        st.metric("Documents",len({x.get("document_id",x.get("filename")) for x in meta}))
+        st.metric("Chunks",len(meta))
+    else: st.error("Knowledge Base Missing")
+    if st.button("Clear chat",use_container_width=True):
+        st.session_state.messages=[]; st.rerun()
+    st.caption("Grounded document QA. Not a substitute for professional medical care.")
+
+st.markdown('<div class="hero"><h1>🏥 Hospital Knowledge Assistant</h1><p>Ask questions about approved hospital documents and receive grounded answers with source references.</p></div>',unsafe_allow_html=True)
+
+if not idx:
+    st.warning("Knowledge base is missing. Run `python ingest.py`, then upload the four generated files in knowledge_base/ to GitHub.")
+    st.stop()
+
+if "messages" not in st.session_state: st.session_state.messages=[]
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]): st.markdown(m["content"])
+
+q=st.chat_input("Ask a question about the approved hospital documents...")
+if q:
+    st.session_state.messages.append({"role":"user","content":q})
+    with st.chat_message("user"): st.markdown(q)
+    with st.chat_message("assistant"):
+        results=retrieve(q,idx,meta,embed_model,topk,threshold)
+        if not results:
+            text="I could not find sufficient information in the knowledge base to answer this question."
+            st.markdown(text); sources=[]
+        else:
+            try: text=answer(q,results,groq_model)
+            except Exception as e: text=f"Unable to generate the answer. Check your Groq configuration. Details: {e}"
+            st.markdown(text); sources=results
+            st.markdown("#### Sources")
+            for r in results:
+                x=r["item"]
+                st.markdown(f'<div class="source"><b>{x.get("filename","Unknown")}</b><br>Page/Slide: {x.get("page_number","N/A")} • Section: {x.get("section","N/A")} • Relevance: {r["score"]:.3f}</div>',unsafe_allow_html=True)
+        st.session_state.messages.append({"role":"assistant","content":text})
