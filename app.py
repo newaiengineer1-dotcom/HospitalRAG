@@ -123,15 +123,30 @@ if q:
                 st.markdown(f'<div class="source"><b>{x.get("filename","Unknown")}</b><br>Page/Slide: {x.get("page_number","N/A")} • Section: {x.get("section","N/A")} • Relevance: {r["score"]:.3f}</div>',unsafe_allow_html=True)
         st.session_state.messages.append({"role":"assistant","content":text})
 
+st.markdown("""
+<style>
+
+/* MAIN APP */
+.stApp {
+    background-color: #071313;
+    color: #E6FFFB;
+}
+
+/* GENERAL TEXT */
 .stApp p,
 .stApp span,
-.stApp label,
-.stApp div {
+.stApp label {
     color: #E6FFFB !important;
 }
 
+/* HEADINGS */
 h1, h2, h3, h4, h5, h6 {
     color: #F0FFFC !important;
+}
+
+/* SIDEBAR */
+[data-testid="stSidebar"] {
+    background-color: #0A1D1D;
 }
 
 [data-testid="stSidebar"] p,
@@ -140,19 +155,92 @@ h1, h2, h3, h4, h5, h6 {
     color: #D9F5F1 !important;
 }
 
+/* CHAT TEXT */
 [data-testid="stChatMessage"] p {
     color: #E6FFFB !important;
 }
 
-.stButton > button {
-    color: #FFFFFF !important;
-}
-
+/* CHAT INPUT */
 [data-testid="stChatInput"] textarea {
     color: #FFFFFF !important;
     background-color: #102525 !important;
+    caret-color: #14B8A6 !important;
 }
 
 [data-testid="stChatInput"] textarea::placeholder {
     color: #9CC7C2 !important;
 }
+
+/* BUTTON */
+.stButton > button {
+    background-color: #0F766E !important;
+    color: #FFFFFF !important;
+    border: 1px solid #14B8A6 !important;
+}
+
+.stButton > button p {
+    color: #FFFFFF !important;
+}
+
+/* METRICS */
+[data-testid="stMetricLabel"] {
+    color: #9CC7C2 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: #F0FFFC !important;
+}
+
+/* MARKDOWN */
+.stMarkdown p,
+.stMarkdown li {
+    color: #D9F5F1 !important;
+}
+
+/* HERO */
+.hero {
+    padding: 28px;
+    border: 1px solid #175C58;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #0B2423, #0A1818);
+    margin-bottom: 22px;
+}
+
+.hero h1 {
+    color: #F0FFFC !important;
+}
+
+.hero p {
+    color: #B8D9D5 !important;
+}
+
+/* SOURCE CARDS */
+.source {
+    padding: 12px;
+    border-left: 3px solid #14B8A6;
+    background: #0A1918;
+    border-radius: 8px;
+    margin: 7px 0;
+}
+
+.source strong {
+    color: #F0FFFC !important;
+}
+
+.source span {
+    color: #A9CCC7 !important;
+}
+
+/* CODE */
+code {
+    color: #7DE3D6 !important;
+    background-color: #102525 !important;
+}
+
+/* DIVIDER */
+hr {
+    border-color: #174846 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
