@@ -1,0 +1,19 @@
+{
+  "application": "Hospital Knowledge Assistant",
+  "total_documents": 10,
+  "total_chunks": 13,
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "index_type": "FAISS IndexFlatIP",
+  "files": [
+    "emergency_services.pdf",
+    "README.txt",
+    "faq.txt",
+    "hospital_orientation.pptx",
+    "hospital_policy.txt",
+    "hospital_information.txt",
+    "department_directory.csv",
+    "departments.md",
+    "visitor_information.docx",
+    "hospital_services.xlsx"
+  ]
+}

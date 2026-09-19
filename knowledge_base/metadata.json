@@ -1,0 +1,132 @@
+[
+  {
+    "document_id": "460d7b16aac7dff6",
+    "filename": "emergency_services.pdf",
+    "page_number": 1,
+    "section": "",
+    "chunk_id": "chunk_000000",
+    "chunk_index": 0,
+    "text": "Emergency Services — Demonstration Document\nSynthetic content created for testing HospitalRAG. This is not an actual emergency protocol.\nEmergency Department\nLocation: Ground Floor, Emergency Wing. The department provides assessment and emergency\ncare services by qualified healthcare staff.\nGeneral Process\n1. Proceed to the Emergency Department or follow instructions from qualified emergency\npersonnel. 2. Registration and clinical triage are handled according to local hospital procedures. 3.\nClinical decisions are made by qualified healthcare professionals.\nImportant Notice\nThis file contains fictional demonstration information. It must not be used as medical advice or a\nsubstitute for emergency services.",
+    "source": "emergency_services.pdf"
+  },
+  {
+    "document_id": "b01eeed0ec6fc4f4",
+    "filename": "README.txt",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000001",
+    "chunk_index": 0,
+    "text": "HospitalRAG Sample Hospital Documents\n\nThis folder contains synthetic demonstration documents in all formats requested:\nPDF, DOCX, TXT, MD, CSV, XLSX, and PPTX.\n\nThese files are designed to test:\n- document extraction\n- page/slide metadata\n- chunking\n- table extraction\n- FAISS indexing\n- source citations\n- format detection\n\nIMPORTANT:\nThe content is fictional/synthetic. It is not an actual hospital's information,\npolicy, emergency protocol, clinical guideline, or patient record.\n\nPlace these files inside:\nhospital_documents/\n\nThen run:\npython ingest.py\n\nExpected knowledge-base output:\nknowledge_base/\n faiss.index\n metadata.json\n config.json\n manifest.json",
+    "source": "README.txt"
+  },
+  {
+    "document_id": "3fa8cf5f3e98f861",
+    "filename": "faq.txt",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000002",
+    "chunk_index": 0,
+    "text": "Frequently Asked Questions:\nQ: Where is the cafeteria located?\nA: The cafeteria is on the 1st floor near the main entrance.\nQ: How do I request medical records?\nA: Submit a request form online or visit the Health Information Management department.",
+    "source": "faq.txt"
+  },
+  {
+    "document_id": "086963c46b105562",
+    "filename": "hospital_orientation.pptx",
+    "page_number": 1,
+    "section": "Slide 1",
+    "chunk_id": "chunk_000003",
+    "chunk_index": 0,
+    "text": "Hospital Knowledge Assistant\nSynthetic document set for RAG testing",
+    "source": "hospital_orientation.pptx"
+  },
+  {
+    "document_id": "086963c46b105562",
+    "filename": "hospital_orientation.pptx",
+    "page_number": 2,
+    "section": "Slide 2",
+    "chunk_id": "chunk_000004",
+    "chunk_index": 0,
+    "text": "Departments\nEmergency — Ground Floor\nOutpatient — First Floor\nLaboratory — Ground Floor\nRadiology — First Floor\nPharmacy — Ground Floor",
+    "source": "hospital_orientation.pptx"
+  },
+  {
+    "document_id": "086963c46b105562",
+    "filename": "hospital_orientation.pptx",
+    "page_number": 3,
+    "section": "Slide 3",
+    "chunk_id": "chunk_000005",
+    "chunk_index": 0,
+    "text": "Safety Notice\nAll content in this demonstration deck is synthetic. It is not a real hospital protocol and is not medical advice.",
+    "source": "hospital_orientation.pptx"
+  },
+  {
+    "document_id": "06eef0a2caa2e40f",
+    "filename": "hospital_policy.txt",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000006",
+    "chunk_index": 0,
+    "text": "Hospital General Policy:\nAll staff members must wear ID badges at all times within the facility.\nVisiting hours are from 8:00 AM to 8:00 PM daily. Emergency care is available 24/7.",
+    "source": "hospital_policy.txt"
+  },
+  {
+    "document_id": "5c136239b65b939c",
+    "filename": "hospital_information.txt",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000007",
+    "chunk_index": 0,
+    "text": "HOSPITAL KNOWLEDGE BASE — GENERAL INFORMATION\n\nThis is a synthetic demonstration document for the Hospital Knowledge Assistant.\nIt is intended only for testing RAG retrieval, citations, metadata, and document\nformat support. It is not an actual hospital policy and must not be used for\nclinical decision-making.\n\nHospital name: Green Valley General Hospital\nLocation: Main Campus\nGeneral information desk: +00 000 000 0000\nPatient registration: Ground Floor, Main Building\nOutpatient clinic: First Floor\nEmergency department: Ground Floor, Emergency Wing\nLaboratory: Ground Floor, Diagnostic Wing\nRadiology: First Floor, Diagnostic Wing\nPharmacy: Ground Floor, Main Building\n\nThe information desk can help users locate departments and understand the\nhospital's general administrative services. For urgent medical concerns,\npatients should contact qualified healthcare professionals or appropriate\nemergency services.\n\nDocument owner: Administration\nDocument version: 1.0",
+    "source": "hospital_information.txt"
+  },
+  {
+    "document_id": "40edb94d847f9aaa",
+    "filename": "department_directory.csv",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000008",
+    "chunk_index": 0,
+    "text": "department_id | department | location | service\nD001 | Emergency Department | Ground Floor - Emergency Wing | Emergency assessment and care\nD002 | Outpatient Department | First Floor - Main Building | Scheduled outpatient services\nD003 | Laboratory | Ground Floor - Diagnostic Wing | Diagnostic testing\nD004 | Radiology | First Floor - Diagnostic Wing | Diagnostic imaging\nD005 | Pharmacy | Ground Floor - Main Building | Medication dispensing\nD006 | Records Department | First Floor - Administration Wing | Records administration",
+    "source": "department_directory.csv"
+  },
+  {
+    "document_id": "9ba34fe6801146e4",
+    "filename": "departments.md",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000009",
+    "chunk_index": 0,
+    "text": "# Hospital Departments\n\n> Synthetic demonstration content for RAG testing. Not an actual hospital policy.\n\n## Emergency Department\n\n**Location:** Ground Floor, Emergency Wing\n\nThe Emergency Department provides assessment and emergency care services.\nClinical decisions are made by qualified healthcare professionals.\n\n## Outpatient Department\n\n**Location:** First Floor, Main Building\n\nThe Outpatient Department supports scheduled consultations and related\nadministrative services.\n\n## Laboratory\n\n**Location:** Ground Floor, Diagnostic Wing\n\nThe Laboratory provides diagnostic testing services according to hospital\nprocedures.\n\n## Radiology\n\n**Location:** First Floor, Diagnostic Wing\n\nRadiology provides diagnostic imaging services.\n\n## Pharmacy\n\n**Location:** Ground Floor, Main Building\n\nThe Pharmacy provides medication-dispensing services according to applicable\nhospital procedures and professional requirements.\n\n## Records Department\n\n**Location:** First Floor, Administration Wing\n\nThe Records Department manages approved patient-record administration.\n\n## Important\n\nThis document contains synthetic information created for software testing.\nIt must not be interpreted as a real hospital directory, medical instruction,\nor emergency protocol.",
+    "source": "departments.md"
+  },
+  {
+    "document_id": "4c7987ddce94ec4c",
+    "filename": "visitor_information.docx",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000010",
+    "chunk_index": 0,
+    "text": "Hospital Services and Visitor Information\nSynthetic demonstration document for HospitalRAG. Not an actual hospital policy or clinical guideline.\nVisitor Information\nVisitors should follow reception instructions, display any required visitor identification, and follow department-specific access rules.\nDepartment Directory\nSafety Notice\nThis demonstration file contains no real patient data. For emergencies, contact qualified medical professionals or appropriate emergency services.\nDepartment | Location | General Function\nEmergency Department | Ground Floor, Emergency Wing | Emergency assessment and care\nOutpatient Department | First Floor | Scheduled outpatient services\nLaboratory | Ground Floor, Diagnostic Wing | Diagnostic testing\nRadiology | First Floor, Diagnostic Wing | Diagnostic imaging\nPharmacy | Ground Floor | Medication dispensing",
+    "source": "visitor_information.docx"
+  },
+  {
+    "document_id": "ae25b6a0963cc138",
+    "filename": "hospital_services.xlsx",
+    "page_number": null,
+    "section": "Services",
+    "chunk_id": "chunk_000011",
+    "chunk_index": 0,
+    "text": "Department | Location | Service | Notes\nEmergency Department | Ground Floor, Emergency Wing | Emergency assessment and care | Synthetic RAG test data\nOutpatient Department | First Floor | Scheduled outpatient services | Synthetic RAG test data\nLaboratory | Ground Floor, Diagnostic Wing | Diagnostic testing | Synthetic RAG test data\nRadiology | First Floor, Diagnostic Wing | Diagnostic imaging | Synthetic RAG test data\nPharmacy | Ground Floor | Medication dispensing | Synthetic RAG test data",
+    "source": "hospital_services.xlsx"
+  },
+  {
+    "document_id": "ae25b6a0963cc138",
+    "filename": "hospital_services.xlsx",
+    "page_number": null,
+    "section": "Contact",
+    "chunk_id": "chunk_000012",
+    "chunk_index": 0,
+    "text": "Service | Contact Method | Location\nInformation Desk | Main reception | Ground Floor\nPatient Registration | Registration counter | Ground Floor\nRecords | Records counter | First Floor",
+    "source": "hospital_services.xlsx"
+  }
+]
