@@ -1,0 +1,24 @@
+HOSPITAL KNOWLEDGE BASE — GENERAL INFORMATION
+
+This is a synthetic demonstration document for the Hospital Knowledge Assistant.
+It is intended only for testing RAG retrieval, citations, metadata, and document
+format support. It is not an actual hospital policy and must not be used for
+clinical decision-making.
+
+Hospital name: Green Valley General Hospital
+Location: Main Campus
+General information desk: +00 000 000 0000
+Patient registration: Ground Floor, Main Building
+Outpatient clinic: First Floor
+Emergency department: Ground Floor, Emergency Wing
+Laboratory: Ground Floor, Diagnostic Wing
+Radiology: First Floor, Diagnostic Wing
+Pharmacy: Ground Floor, Main Building
+
+The information desk can help users locate departments and understand the
+hospital's general administrative services. For urgent medical concerns,
+patients should contact qualified healthcare professionals or appropriate
+emergency services.
+
+Document owner: Administration
+Document version: 1.0

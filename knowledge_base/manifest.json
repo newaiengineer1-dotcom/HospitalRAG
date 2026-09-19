@@ -1,0 +1,11 @@
+{
+  "application": "Hospital Knowledge Assistant",
+  "total_documents": 2,
+  "total_chunks": 2,
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "index_type": "FAISS IndexFlatIP",
+  "files": [
+    "faq.txt",
+    "hospital_policy.txt"
+  ]
+}

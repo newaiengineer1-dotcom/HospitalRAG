@@ -1,0 +1,7 @@
+department_id,department,location,service
+D001,Emergency Department,Ground Floor - Emergency Wing,Emergency assessment and care
+D002,Outpatient Department,First Floor - Main Building,Scheduled outpatient services
+D003,Laboratory,Ground Floor - Diagnostic Wing,Diagnostic testing
+D004,Radiology,First Floor - Diagnostic Wing,Diagnostic imaging
+D005,Pharmacy,Ground Floor - Main Building,Medication dispensing
+D006,Records Department,First Floor - Administration Wing,Records administration

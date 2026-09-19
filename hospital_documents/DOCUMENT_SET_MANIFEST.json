@@ -1,0 +1,22 @@
+{
+  "purpose": "Synthetic HospitalRAG test corpus",
+  "warning": "Demonstration data only; not a real hospital knowledge base.",
+  "formats": [
+    ".csv",
+    ".md",
+    ".pdf",
+    ".txt",
+    ".pptx",
+    ".xlsx",
+    ".docx"
+  ],
+  "files": [
+    "department_directory.csv",
+    "departments.md",
+    "emergency_services.pdf",
+    "hospital_information.txt",
+    "hospital_orientation.pptx",
+    "hospital_services.xlsx",
+    "visitor_information.docx"
+  ]
+}

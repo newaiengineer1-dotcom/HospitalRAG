@@ -1,0 +1,22 @@
+[
+  {
+    "document_id": "3fa8cf5f3e98f861",
+    "filename": "faq.txt",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000000",
+    "chunk_index": 0,
+    "text": "Frequently Asked Questions:\nQ: Where is the cafeteria located?\nA: The cafeteria is on the 1st floor near the main entrance.\nQ: How do I request medical records?\nA: Submit a request form online or visit the Health Information Management department.",
+    "source": "faq.txt"
+  },
+  {
+    "document_id": "06eef0a2caa2e40f",
+    "filename": "hospital_policy.txt",
+    "page_number": null,
+    "section": "",
+    "chunk_id": "chunk_000001",
+    "chunk_index": 0,
+    "text": "Hospital General Policy:\nAll staff members must wear ID badges at all times within the facility.\nVisiting hours are from 8:00 AM to 8:00 PM daily. Emergency care is available 24/7.",
+    "source": "hospital_policy.txt"
+  }
+]
