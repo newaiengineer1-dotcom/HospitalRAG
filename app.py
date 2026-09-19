@@ -122,3 +122,37 @@ if q:
                 x=r["item"]
                 st.markdown(f'<div class="source"><b>{x.get("filename","Unknown")}</b><br>Page/Slide: {x.get("page_number","N/A")} • Section: {x.get("section","N/A")} • Relevance: {r["score"]:.3f}</div>',unsafe_allow_html=True)
         st.session_state.messages.append({"role":"assistant","content":text})
+
+.stApp p,
+.stApp span,
+.stApp label,
+.stApp div {
+    color: #E6FFFB !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #F0FFFC !important;
+}
+
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label {
+    color: #D9F5F1 !important;
+}
+
+[data-testid="stChatMessage"] p {
+    color: #E6FFFB !important;
+}
+
+.stButton > button {
+    color: #FFFFFF !important;
+}
+
+[data-testid="stChatInput"] textarea {
+    color: #FFFFFF !important;
+    background-color: #102525 !important;
+}
+
+[data-testid="stChatInput"] textarea::placeholder {
+    color: #9CC7C2 !important;
+}
